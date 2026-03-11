@@ -571,6 +571,53 @@
     .text-mono { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; font-size: 12px; }
     .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; display: inline-block; }
 
+    /* Filter section */
+    .filter-section { margin-bottom: 20px; }
+    .filter-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid #fafafa;
+    }
+    .filter-row:last-child { border-bottom: none; }
+    .filter-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      width: 70px;
+      flex-shrink: 0;
+      padding-top: 5px;
+      text-align: right;
+    }
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .filter-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 4px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .15s;
+      border: 1px solid transparent;
+      background: #f5f5f5;
+      color: var(--text-primary);
+      font-family: inherit;
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+    .filter-tab:hover { background: #e8e8e8; }
+    .filter-tab.active {
+      background: var(--blue-bg);
+      color: var(--blue);
+      border-color: var(--blue);
+      font-weight: 500;
+    }
+
     /* Animations */
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -1073,29 +1120,52 @@
     function AuthorTagPage({ tags, authors, setAuthors, addToast }) {
       const [searchType, setSearchType] = useState('name');
       const [keyword, setKeyword] = useState('');
+      const [filterTagId, setFilterTagId] = useState('all');
       const [searchResult, setSearchResult] = useState(authors);
       const [modalVisible, setModalVisible] = useState(false);
       const [editingAuthor, setEditingAuthor] = useState(null);
       const [currentPage, setCurrentPage] = useState(1);
       const pageSize = 5;
 
-      const handleSearch = () => {
-        if (!keyword.trim()) {
-          setSearchResult(authors);
-          setCurrentPage(1);
-          return;
+      const applyFilters = useCallback((kw, type, tagId, src) => {
+        let result = src || authors;
+        if (kw && kw.trim()) {
+          const k = kw.trim().toLowerCase();
+          result = result.filter(a => {
+            if (type === 'name') return a.nickname.toLowerCase().includes(k);
+            if (type === 'uuid') return a.authorId.toLowerCase().includes(k);
+            return false;
+          });
         }
-        const kw = keyword.trim().toLowerCase();
-        const result = authors.filter(a => {
-          if (searchType === 'name') return a.nickname.toLowerCase().includes(kw);
-          if (searchType === 'uuid') return a.authorId.toLowerCase().includes(kw);
-          return false;
-        });
-        setSearchResult(result);
+        if (tagId === 'none') {
+          result = result.filter(a => a.tagIds.length === 0);
+        } else if (tagId !== 'all') {
+          const tid = parseInt(tagId);
+          result = result.filter(a => a.tagIds.includes(tid));
+        }
+        return result;
+      }, [authors]);
+
+      const handleSearch = () => {
+        setSearchResult(applyFilters(keyword, searchType, filterTagId));
         setCurrentPage(1);
       };
 
-      useEffect(() => { setSearchResult(authors); }, [authors]);
+      const handleFilterTagChange = (newTagId) => {
+        setFilterTagId(newTagId);
+        setSearchResult(applyFilters(keyword, searchType, newTagId));
+        setCurrentPage(1);
+      };
+
+      const handleReset = () => {
+        setKeyword('');
+        setSearchType('name');
+        setFilterTagId('all');
+        setSearchResult(authors);
+        setCurrentPage(1);
+      };
+
+      useEffect(() => { setSearchResult(applyFilters(keyword, searchType, filterTagId)); }, [authors]);
 
       const totalPages = Math.ceil(searchResult.length / pageSize);
       const paged = searchResult.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -1118,30 +1188,60 @@
               <span className="card-title">作者标签管理</span>
             </div>
             <div className="card-body">
-              <div className="search-bar">
-                <div className="search-field">
-                  <label>搜索类型</label>
-                  <select className="form-input form-select" value={searchType} onChange={e => setSearchType(e.target.value)}>
-                    <option value="name">作者名称</option>
-                    <option value="uuid">作者 UUID</option>
-                  </select>
+              <div className="filter-section">
+                <div className="filter-row">
+                  <span className="filter-label">搜索类型</span>
+                  <div className="filter-tabs">
+                    {[{ key: 'name', label: '作者名称' }, { key: 'uuid', label: '作者 UUID' }].map(item => (
+                      <button
+                        key={item.key}
+                        className={`filter-tab ${searchType === item.key ? 'active' : ''}`}
+                        onClick={() => setSearchType(item.key)}
+                      >{item.label}</button>
+                    ))}
+                  </div>
                 </div>
-                <div className="search-field">
-                  <label>关键词</label>
-                  <input
-                    className="form-input"
-                    placeholder={searchType === 'name' ? '输入作者名称' : '输入作者 UUID'}
-                    value={keyword}
-                    onChange={e => setKeyword(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                    style={{ width: 280 }}
-                  />
+                <div className="filter-row">
+                  <span className="filter-label">标签筛选</span>
+                  <div className="filter-tabs">
+                    <button
+                      className={`filter-tab ${filterTagId === 'all' ? 'active' : ''}`}
+                      onClick={() => handleFilterTagChange('all')}
+                    >全部</button>
+                    {tags.filter(t => t.status === 1).map(tag => (
+                      <button
+                        key={tag.id}
+                        className={`filter-tab ${filterTagId === String(tag.id) ? 'active' : ''}`}
+                        onClick={() => handleFilterTagChange(String(tag.id))}
+                      >
+                        <span className="color-dot" style={{ background: tag.color, width: 10, height: 10, borderRadius: 2, display: 'inline-block', marginRight: 4, verticalAlign: 'middle' }} />
+                        {tag.name}
+                      </button>
+                    ))}
+                    <button
+                      className={`filter-tab ${filterTagId === 'none' ? 'active' : ''}`}
+                      onClick={() => handleFilterTagChange('none')}
+                    >无标签</button>
+                  </div>
                 </div>
-                <button className="btn btn-primary" onClick={handleSearch}>
-                  <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M11.742 10.344a6.5 6.5 0 10-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 001.415-1.414l-3.85-3.85a1.007 1.007 0 00-.115-.1zM12 6.5a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z"/></svg>
-                  搜索
-                </button>
-                <button className="btn btn-default" onClick={() => { setKeyword(''); setSearchResult(authors); setCurrentPage(1); }}>重置</button>
+                <div className="filter-row">
+                  <span className="filter-label">关键词</span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      className="form-input"
+                      placeholder={searchType === 'name' ? '输入作者名称' : '输入作者 UUID'}
+                      value={keyword}
+                      onChange={e => setKeyword(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                      style={{ width: 320 }}
+                    />
+                    <button className="btn btn-primary" onClick={handleSearch}>
+                      <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M11.742 10.344a6.5 6.5 0 10-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 001.415-1.414l-3.85-3.85a1.007 1.007 0 00-.115-.1zM12 6.5a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z"/></svg>
+                      搜索
+                    </button>
+                    <button className="btn btn-default" onClick={handleReset}>重置</button>
+                  </div>
+                </div>
               </div>
 
               {searchResult.length === 0 ? (
