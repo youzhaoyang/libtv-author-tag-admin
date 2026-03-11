@@ -571,71 +571,91 @@
     .text-mono { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; font-size: 12px; }
     .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; display: inline-block; }
 
-    /* Tag tab bar (with counts) */
-    .tag-tab-bar {
+    /* Pill tab bar */
+    .pill-tab-bar {
       display: flex;
-      gap: 0;
+      gap: 12px;
+      padding: 16px 24px;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 20px;
       overflow-x: auto;
+      flex-wrap: wrap;
     }
-    .tag-tab-item {
+    .pill-tab {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 12px 20px;
-      font-size: 14px;
+      padding: 5px 16px;
+      border-radius: 100px;
+      font-size: 13px;
       cursor: pointer;
       transition: all .15s;
-      border: none;
-      border-bottom: 2px solid transparent;
-      background: none;
+      border: 1px solid var(--border);
+      background: #fff;
       color: var(--text-secondary);
       font-family: inherit;
       white-space: nowrap;
-      position: relative;
+      line-height: 1.5;
     }
-    .tag-tab-item:hover { color: var(--text-primary); }
-    .tag-tab-item.active {
+    .pill-tab:hover { color: var(--text-primary); border-color: #bfbfbf; }
+    .pill-tab.active {
       color: var(--blue);
-      border-bottom-color: var(--blue);
+      background: var(--blue-bg);
+      border-color: var(--blue);
       font-weight: 500;
     }
-    .tag-tab-dot {
+    .pill-tab-dot {
       width: 8px;
       height: 8px;
       border-radius: 2px;
       display: inline-block;
       flex-shrink: 0;
     }
-    .tag-tab-count {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-left: 2px;
-    }
-    .tag-tab-item.active .tag-tab-count { color: var(--blue); }
 
-    /* Search fields row (flat) */
-    .search-fields-row {
+    /* Inline search grid */
+    .inline-search-grid {
       display: flex;
       gap: 16px;
-      align-items: flex-end;
-      margin-bottom: 20px;
+      padding: 16px 24px;
+      align-items: stretch;
+      flex-wrap: wrap;
     }
-    .search-field-item {
+    .inline-field {
+      display: flex;
+      align-items: center;
+      border: 1px solid #d9d9d9;
+      border-radius: var(--radius-sm);
+      background: #fff;
+      overflow: hidden;
       flex: 1;
-      max-width: 320px;
+      min-width: 220px;
+      max-width: 360px;
+      transition: border-color .2s;
     }
-    .search-field-item label {
-      display: block;
+    .inline-field:focus-within { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(22,119,255,.08); }
+    .inline-field-label {
+      padding: 7px 0 7px 12px;
       font-size: 13px;
       color: var(--text-secondary);
-      margin-bottom: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      user-select: none;
     }
-    .search-field-actions {
+    .inline-field-input {
+      border: none;
+      outline: none;
+      padding: 7px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      color: var(--text-primary);
+    }
+    .inline-field-input::placeholder { color: #bfbfbf; }
+    .inline-search-actions {
       display: flex;
       gap: 8px;
-      padding-bottom: 1px;
+      align-items: center;
     }
 
     /* Animations */
@@ -1214,68 +1234,65 @@
             <div className="card-header">
               <span className="card-title">作者标签管理</span>
             </div>
-            <div className="card-body">
-              {/* 标签 Tab 栏（带数量） */}
-              <div className="tag-tab-bar">
+            <div className="card-body" style={{ padding: 0 }}>
+              {/* 标签 Tab 栏（胶囊 + 数量） */}
+              <div className="pill-tab-bar">
                 <button
-                  className={`tag-tab-item ${filterTagId === 'all' ? 'active' : ''}`}
+                  className={`pill-tab ${filterTagId === 'all' ? 'active' : ''}`}
                   onClick={() => handleFilterTagChange('all')}
-                >全部<span className="tag-tab-count">{getTagCount('all')}</span></button>
+                >全部 {getTagCount('all')}</button>
                 {tags.filter(t => t.status === 1).map(tag => (
                   <button
                     key={tag.id}
-                    className={`tag-tab-item ${filterTagId === String(tag.id) ? 'active' : ''}`}
+                    className={`pill-tab ${filterTagId === String(tag.id) ? 'active' : ''}`}
                     onClick={() => handleFilterTagChange(String(tag.id))}
                   >
-                    <span className="tag-tab-dot" style={{ background: tag.color }} />
-                    {tag.name}<span className="tag-tab-count">{getTagCount(String(tag.id))}</span>
+                    <span className="pill-tab-dot" style={{ background: tag.color }} />
+                    {tag.name} {getTagCount(String(tag.id))}
                   </button>
                 ))}
                 <button
-                  className={`tag-tab-item ${filterTagId === 'none' ? 'active' : ''}`}
+                  className={`pill-tab ${filterTagId === 'none' ? 'active' : ''}`}
                   onClick={() => handleFilterTagChange('none')}
-                >无标签<span className="tag-tab-count">{getTagCount('none')}</span></button>
+                >无标签 {getTagCount('none')}</button>
               </div>
 
-              {/* 搜索字段平铺 */}
-              <div className="search-fields-row">
-                <div className="search-field-item">
-                  <label>作者名称</label>
+              {/* 搜索字段网格平铺 */}
+              <div className="inline-search-grid">
+                <div className="inline-field">
+                  <span className="inline-field-label">作者名称</span>
                   <input
-                    className="form-input"
-                    placeholder="请输入"
+                    className="inline-field-input"
+                    placeholder="请输入作者名称"
                     value={nameKeyword}
                     onChange={e => setNameKeyword(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleSearch()}
                   />
                 </div>
-                <div className="search-field-item">
-                  <label>作者 UUID</label>
+                <div className="inline-field">
+                  <span className="inline-field-label">作者 UUID</span>
                   <input
-                    className="form-input"
-                    placeholder="请输入"
+                    className="inline-field-input"
+                    placeholder="请输入 UUID"
                     value={uuidKeyword}
                     onChange={e => setUuidKeyword(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleSearch()}
                   />
                 </div>
-                <div className="search-field-actions">
-                  <button className="btn btn-primary" onClick={handleSearch}>
-                    <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M11.742 10.344a6.5 6.5 0 10-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 001.415-1.414l-3.85-3.85a1.007 1.007 0 00-.115-.1zM12 6.5a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z"/></svg>
-                    搜索
-                  </button>
+                <div className="inline-search-actions">
+                  <button className="btn btn-primary" onClick={handleSearch}>搜索</button>
                   <button className="btn btn-default" onClick={handleReset}>重置</button>
                 </div>
               </div>
 
               {searchResult.length === 0 ? (
-                <div className="empty">
+                <div className="empty" style={{ padding: '48px 24px' }}>
                   <div className="empty-icon">👤</div>
                   <div className="empty-text">未找到匹配的作者</div>
                 </div>
               ) : (
                 <>
-                  <div className="table-wrap">
+                  <div className="table-wrap" style={{ padding: '0 0' }}>
                     <table>
                       <thead>
                         <tr>
@@ -1325,7 +1342,7 @@
                       </tbody>
                     </table>
                   </div>
-                  <div className="pagination">
+                  <div className="pagination" style={{ padding: '0 24px 16px' }}>
                     <span className="page-info">共 {searchResult.length} 条</span>
                     <button className="page-btn" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>‹</button>
                     {Array.from({ length: totalPages }, (_, i) => (
