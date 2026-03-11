@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LibTV 作者标签管理 - 运营后台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/dayjs/dayjs.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-body: #f0f2f5;
+      --bg-card: #ffffff;
+      --bg-sidebar: #001529;
+      --bg-sidebar-hover: #0c2135;
+      --bg-sidebar-active: #1677ff;
+      --text-primary: #1f1f1f;
+      --text-secondary: #8c8c8c;
+      --text-sidebar: rgba(255,255,255,.65);
+      --text-sidebar-active: #fff;
+      --border: #f0f0f0;
+      --blue: #1677ff;
+      --blue-hover: #4096ff;
+      --blue-bg: #e6f4ff;
+      --green: #52c41a;
+      --red: #ff4d4f;
+      --red-hover: #ff7875;
+      --orange: #faad14;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 6px 16px rgba(0,0,0,.08);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,.12);
+      --radius: 8px;
+      --radius-sm: 6px;
+    }
+
+    body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text-primary);
+      background: var(--bg-body);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: var(--bg-sidebar);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+    }
+    .sidebar-logo {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .sidebar-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--blue);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .sidebar-logo-text { color: #fff; font-size: 16px; font-weight: 600; letter-spacing: .5px; }
+    .sidebar-menu { padding: 8px 0; flex: 1; }
+    .sidebar-section { padding: 16px 20px 8px; font-size: 11px; color: rgba(255,255,255,.3); text-transform: uppercase; letter-spacing: 1px; }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      color: var(--text-sidebar);
+      cursor: pointer;
+      transition: all .2s;
+      font-size: 14px;
+      border-radius: 0;
+      margin: 2px 8px;
+      border-radius: 6px;
+    }
+    .sidebar-item:hover { background: var(--bg-sidebar-hover); color: var(--text-sidebar-active); }
+    .sidebar-item.active { background: var(--bg-sidebar-active); color: var(--text-sidebar-active); font-weight: 500; }
+    .sidebar-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,.06);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sidebar-avatar { width: 32px; height: 32px; border-radius: 50%; background: #2a4a6b; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 500; }
+    .sidebar-user { color: rgba(255,255,255,.65); font-size: 13px; }
+    .sidebar-role { font-size: 11px; color: rgba(255,255,255,.3); }
+
+    /* Main content */
+    .main { flex: 1; margin-left: 220px; }
+    .header {
+      height: 64px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-title { font-size: 16px; font-weight: 600; }
+    .header-breadcrumb { font-size: 13px; color: var(--text-secondary); margin-left: 16px; }
+    .header-breadcrumb span { color: var(--text-primary); }
+
+    .content { padding: 24px; }
+
+    /* Card */
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+    .card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title { font-size: 15px; font-weight: 600; }
+    .card-body { padding: 24px; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+      border: 1px solid transparent;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: var(--blue-hover); }
+    .btn-primary:disabled { background: #d9d9d9; color: #fff; cursor: not-allowed; }
+    .btn-default { background: #fff; border-color: #d9d9d9; color: var(--text-primary); }
+    .btn-default:hover { border-color: var(--blue); color: var(--blue); }
+    .btn-danger { background: #fff; border-color: #d9d9d9; color: var(--red); }
+    .btn-danger:hover { background: #fff2f0; border-color: var(--red); }
+    .btn-link { background: none; border: none; color: var(--blue); padding: 0; font-size: 13px; }
+    .btn-link:hover { color: var(--blue-hover); }
+    .btn-link.danger { color: var(--red); }
+    .btn-link.danger:hover { color: var(--red-hover); }
+    .btn-sm { padding: 2px 8px; font-size: 13px; }
+    .btn svg { width: 14px; height: 14px; }
+
+    /* Form */
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text-primary); }
+    .form-label .required { color: var(--red); margin-right: 4px; }
+    .form-input {
+      width: 100%;
+      padding: 7px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-family: inherit;
+      transition: all .2s;
+      outline: none;
+      background: #fff;
+    }
+    .form-input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(22,119,255,.1); }
+    .form-input::placeholder { color: #bfbfbf; }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%23999'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+    .form-hint { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+    /* Search bar */
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .search-field { display: flex; flex-direction: column; gap: 4px; }
+    .search-field label { font-size: 13px; color: var(--text-secondary); }
+    .search-field .form-input, .search-field .form-select { width: 200px; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: #fafafa;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      vertical-align: middle;
+    }
+    tbody tr:hover { background: #fafafa; }
+    tbody tr:last-child td { border-bottom: none; }
+
+    /* Tags */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 20px;
+      white-space: nowrap;
+    }
+    .tag-icon { width: 14px; height: 14px; border-radius: 2px; object-fit: contain; }
+    .tag + .tag { margin-left: 6px; }
+
+    /* Color dot */
+    .color-dot {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid rgba(0,0,0,.06);
+      vertical-align: middle;
+    }
+    .color-dot-lg {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+    }
+
+    /* Color picker */
+    .color-picker { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .color-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all .15s;
+      position: relative;
+    }
+    .color-swatch:hover { transform: scale(1.15); }
+    .color-swatch.active { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(22,119,255,.25); }
+    .color-swatch.active::after {
+      content: '✓';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      text-shadow: 0 1px 2px rgba(0,0,0,.3);
+    }
+    .color-hex-input {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 4px;
+    }
+    .color-hex-input .form-input { width: 100px; font-family: 'SF Mono', 'Menlo', monospace; font-size: 13px; }
+
+    /* Switch */
+    .switch {
+      width: 40px;
+      height: 22px;
+      background: #d9d9d9;
+      border-radius: 11px;
+      cursor: pointer;
+      transition: all .2s;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .switch.on { background: var(--blue); }
+    .switch::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: all .2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,.15);
+    }
+    .switch.on::after { left: 20px; }
+
+    /* Status badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      padding: 2px 10px;
+      border-radius: 100px;
+    }
+    .status-badge.enabled { background: #f6ffed; color: var(--green); }
+    .status-badge.disabled { background: #f5f5f5; color: var(--text-secondary); }
+    .status-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Modal */
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn .2s;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+      width: 520px;
+      max-width: 90vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp .25s ease-out;
+    }
+    .modal.wide { width: 640px; }
+    .modal-header {
+      padding: 20px 24px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-title { font-size: 16px; font-weight: 600; }
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all .15s;
+      background: none;
+      border: none;
+      font-size: 18px;
+    }
+    .modal-close:hover { background: #f5f5f5; color: var(--text-primary); }
+    .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    /* Icon upload */
+    .icon-upload {
+      width: 64px;
+      height: 64px;
+      border: 2px dashed #d9d9d9;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all .2s;
+      background: #fafafa;
+      position: relative;
+      overflow: hidden;
+    }
+    .icon-upload:hover { border-color: var(--blue); color: var(--blue); }
+    .icon-upload img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
+    .icon-upload-remove {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 18px;
+      height: 18px;
+      background: var(--red);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      cursor: pointer;
+      border: 2px solid #fff;
+    }
+    .icon-upload-hint { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+    /* Avatar */
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      flex-shrink: 0;
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* Tag checkbox list */
+    .tag-check-list { display: flex; flex-direction: column; gap: 10px; }
+    .tag-check-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tag-check-item:hover { background: #fafafa; }
+    .tag-check-item.checked { background: var(--blue-bg); border-color: var(--blue); }
+    .tag-check-item.check-disabled { opacity: .5; cursor: not-allowed; }
+    .checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #d9d9d9;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all .15s;
+    }
+    .checkbox.checked { background: var(--blue); border-color: var(--blue); }
+    .checkbox.checked::after { content: '✓'; color: #fff; font-size: 11px; font-weight: 700; }
+
+    /* Confirm dialog */
+    .confirm-body { text-align: center; padding: 16px 0; }
+    .confirm-icon { font-size: 48px; margin-bottom: 16px; }
+    .confirm-text { font-size: 15px; line-height: 1.6; }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      margin-top: 16px;
+    }
+    .page-btn {
+      min-width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      font-size: 13px;
+      transition: all .15s;
+      font-family: inherit;
+      color: var(--text-primary);
+      padding: 0 8px;
+    }
+    .page-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .page-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .page-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .page-info { font-size: 13px; color: var(--text-secondary); margin-right: 8px; }
+
+    /* Empty */
+    .empty { text-align: center; padding: 48px 0; color: var(--text-secondary); }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: .4; }
+    .empty-text { font-size: 14px; }
+
+    /* Tag count badge */
+    .tag-count {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+    .tag-count b { color: var(--text-primary); font-weight: 600; }
+    .tag-count.limit b { color: var(--red); }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      top: 80px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: var(--shadow-md);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideInRight .3s ease-out;
+      font-size: 14px;
+      min-width: 260px;
+      border: 1px solid var(--border);
+    }
+    .toast.success .toast-icon { color: var(--green); }
+    .toast.error .toast-icon { color: var(--red); }
+    .toast.warning .toast-icon { color: var(--orange); }
+    .toast-icon { font-size: 18px; }
+
+    /* Utilities */
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .gap-2 { gap: 8px; }
+    .gap-3 { gap: 12px; }
+    .gap-4 { gap: 16px; }
+    .ml-auto { margin-left: auto; }
+    .text-sm { font-size: 13px; }
+    .text-secondary { color: var(--text-secondary); }
+    .text-mono { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; font-size: 12px; }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; display: inline-block; }
+
+    /* Animations */
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    // ==================== Mock Data ====================
+    const PRESET_COLORS = [
+      '#E53E3E', '#DD6B20', '#D69E2E', '#38A169', '#319795',
+      '#3182CE', '#5A67D8', '#805AD5', '#D53F8C', '#1A202C',
+    ];
+
+    const ICON_EMOJIS = ['🏆', '✓', '🔥', '⭐', '💎', '🎬', '🎨', '👑', '🌟', '🤝'];
+
+    const initialTags = [
+      { id: 1, name: '精选', iconUrl: '🏆', color: '#E53E3E', description: '编辑精选优质作者', status: 1, sortOrder: 0, createdBy: '运营A', createdAt: '2026-03-01 10:00', authorCount: 42 },
+      { id: 2, name: '官方认证', iconUrl: '✓', color: '#3182CE', description: '平台官方认证创作者', status: 1, sortOrder: 1, createdBy: '运营A', createdAt: '2026-03-02 14:30', authorCount: 18 },
+      { id: 3, name: '新锐创作者', iconUrl: '', color: '#38A169', description: '新晋优质创作者', status: 1, sortOrder: 2, createdBy: '运营B', createdAt: '2026-03-05 09:15', authorCount: 67 },
+      { id: 4, name: '商业合作', iconUrl: '🤝', color: '#D69E2E', description: '可接商业合作的创作者', status: 0, sortOrder: 3, createdBy: '运营A', createdAt: '2026-03-08 16:00', authorCount: 5 },
+    ];
+
+    const mockAuthors = [
+      { authorId: 'a1b2c3d4-5678-90ab-cdef-111111111111', nickname: '小飞侠赛事', avatar: '#E53E3E', workCount: 12, tagIds: [1, 2] },
+      { authorId: 'e5f6g7h8-1234-56cd-ef90-222222222222', nickname: 'JOY堂多', avatar: '#3182CE', workCount: 8, tagIds: [] },
+      { authorId: 'i9j0k1l2-abcd-ef12-3456-333333333333', nickname: '林致远2087', avatar: '#805AD5', workCount: 5, tagIds: [3] },
+      { authorId: 'm3n4o5p6-7890-abcd-ef12-444444444444', nickname: '近代AIGC世界', avatar: '#38A169', workCount: 22, tagIds: [1, 3] },
+      { authorId: 'q7r8s9t0-1234-5678-90ab-555555555555', nickname: '三千间Atelier', avatar: '#D69E2E', workCount: 15, tagIds: [2] },
+      { authorId: 'u1v2w3x4-abcd-ef12-3456-666666666666', nickname: '墨冰', avatar: '#D53F8C', workCount: 9, tagIds: [1, 2, 3] },
+      { authorId: 'y5z6a7b8-7890-abcd-ef12-777777777777', nickname: '裕梦', avatar: '#319795', workCount: 18, tagIds: [] },
+      { authorId: 'c9d0e1f2-1234-5678-90ab-888888888888', nickname: '风过草原奶自天然', avatar: '#DD6B20', workCount: 3, tagIds: [4] },
+    ];
+
+    const MAX_TAGS = 20;
+    const MAX_TAGS_PER_AUTHOR = 5;
+
+    // ==================== Toast ====================
+    let toastId = 0;
+    function ToastContainer({ toasts, onRemove }) {
+      return (
+        <div className="toast-container">
+          {toasts.map(t => (
+            <div key={t.id} className={`toast ${t.type}`}>
+              <span className="toast-icon">
+                {t.type === 'success' ? '✅' : t.type === 'error' ? '❌' : '⚠️'}
+              </span>
+              <span>{t.message}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // ==================== Confirm Modal ====================
+    function ConfirmModal({ visible, title, message, onConfirm, onCancel, danger }) {
+      if (!visible) return null;
+      return (
+        <div className="modal-mask" onClick={onCancel}>
+          <div className="modal" style={{ width: 400 }} onClick={e => e.stopPropagation()}>
+            <div className="modal-body">
+              <div className="confirm-body">
+                <div className="confirm-icon">{danger ? '⚠️' : 'ℹ️'}</div>
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{title}</div>
+                <div className="confirm-text">{message}</div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-default" onClick={onCancel}>取消</button>
+              <button className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`} style={danger ? { background: '#ff4d4f', color: '#fff', borderColor: '#ff4d4f' } : {}} onClick={onConfirm}>
+                确定
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==================== Tag Form Modal ====================
+    function TagFormModal({ visible, editingTag, tags, onSave, onCancel }) {
+      const [name, setName] = useState('');
+      const [color, setColor] = useState(PRESET_COLORS[0]);
+      const [hexInput, setHexInput] = useState(PRESET_COLORS[0]);
+      const [iconUrl, setIconUrl] = useState('');
+      const [description, setDescription] = useState('');
+      const [sortOrder, setSortOrder] = useState(0);
+      const [errors, setErrors] = useState({});
+
+      useEffect(() => {
+        if (visible) {
+          if (editingTag) {
+            setName(editingTag.name);
+            setColor(editingTag.color);
+            setHexInput(editingTag.color);
+            setIconUrl(editingTag.iconUrl || '');
+            setDescription(editingTag.description);
+            setSortOrder(editingTag.sortOrder);
+          } else {
+            setName('');
+            setColor(PRESET_COLORS[0]);
+            setHexInput(PRESET_COLORS[0]);
+            setIconUrl('');
+            setDescription('');
+            setSortOrder(tags.length);
+          }
+          setErrors({});
+        }
+      }, [visible, editingTag]);
+
+      const validate = () => {
+        const errs = {};
+        if (!name.trim()) errs.name = '请输入标签名称';
+        else if (name.length > 32) errs.name = '标签名称不能超过 32 个字符';
+        else {
+          const dup = tags.find(t => t.name === name.trim() && (!editingTag || t.id !== editingTag.id));
+          if (dup) errs.name = '标签名称已存在';
+        }
+        if (!/^#[0-9A-Fa-f]{6}$/.test(color)) errs.color = '请选择有效的颜色';
+        setErrors(errs);
+        return Object.keys(errs).length === 0;
+      };
+
+      const handleSave = () => {
+        if (!validate()) return;
+        onSave({
+          id: editingTag?.id,
+          name: name.trim(),
+          iconUrl,
+          color,
+          description: description.trim(),
+          sortOrder,
+        });
+      };
+
+      const handleHexChange = (val) => {
+        setHexInput(val);
+        if (/^#[0-9A-Fa-f]{6}$/.test(val)) setColor(val);
+      };
+
+      if (!visible) return null;
+
+      const isAtLimit = !editingTag && tags.length >= MAX_TAGS;
+
+      return (
+        <div className="modal-mask" onClick={onCancel}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <span className="modal-title">{editingTag ? '编辑标签' : '新增标签'}</span>
+              <button className="modal-close" onClick={onCancel}>×</button>
+            </div>
+            <div className="modal-body">
+              {isAtLimit ? (
+                <div className="empty">
+                  <div className="empty-icon">🚫</div>
+                  <div className="empty-text">标签数量已达上限（{MAX_TAGS}/{MAX_TAGS}），请删除或停用部分标签后再新增</div>
+                </div>
+              ) : (
+                <>
+                  <div className="form-group">
+                    <label className="form-label"><span className="required">*</span>标签名称</label>
+                    <input className="form-input" value={name} onChange={e => setName(e.target.value)} placeholder="如：精选、官方认证" maxLength={32} />
+                    {errors.name && <div className="form-hint" style={{ color: 'var(--red)' }}>{errors.name}</div>}
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">标签图标（选填）</label>
+                    <div className="flex items-center gap-3">
+                      <div className="color-picker">
+                        {ICON_EMOJIS.map(emoji => (
+                          <div
+                            key={emoji}
+                            className={`color-swatch ${iconUrl === emoji ? 'active' : ''}`}
+                            style={{ background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}
+                            onClick={() => setIconUrl(iconUrl === emoji ? '' : emoji)}
+                          >
+                            {iconUrl !== emoji && emoji}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="form-hint">点击选择图标，再次点击取消；图标将展示在标签名称前</div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label"><span className="required">*</span>标签颜色</label>
+                    <div className="color-picker">
+                      {PRESET_COLORS.map(c => (
+                        <div
+                          key={c}
+                          className={`color-swatch ${color === c ? 'active' : ''}`}
+                          style={{ background: c }}
+                          onClick={() => { setColor(c); setHexInput(c); }}
+                        />
+                      ))}
+                      <div className="color-hex-input">
+                        <input
+                          className="form-input"
+                          value={hexInput}
+                          onChange={e => handleHexChange(e.target.value)}
+                          placeholder="#000000"
+                          maxLength={7}
+                        />
+                        <div className="color-dot color-dot-lg" style={{ background: color }} />
+                      </div>
+                    </div>
+                    {errors.color && <div className="form-hint" style={{ color: 'var(--red)' }}>{errors.color}</div>}
+                    <div style={{ marginTop: 12 }}>
+                      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>预览：</span>
+                      <span className="tag" style={{ background: color, color: getLabelTextColor(color) }}>
+                        {iconUrl && <span style={{ fontSize: 12 }}>{iconUrl}</span>}
+                        {name || '标签名称'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">排序权重</label>
+                    <input className="form-input" type="number" value={sortOrder} onChange={e => setSortOrder(parseInt(e.target.value) || 0)} style={{ width: 120 }} />
+                    <div className="form-hint">数值越小排序越靠前</div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">备注描述</label>
+                    <textarea className="form-input form-textarea" value={description} onChange={e => setDescription(e.target.value)} placeholder="仅内部可见，备注标签用途" />
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-default" onClick={onCancel}>取消</button>
+              {!isAtLimit && <button className="btn btn-primary" onClick={handleSave}>保存</button>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==================== Author Tag Modal ====================
+    function AuthorTagModal({ visible, author, tags, onSave, onCancel }) {
+      const [selectedIds, setSelectedIds] = useState([]);
+
+      useEffect(() => {
+        if (visible && author) {
+          setSelectedIds([...author.tagIds]);
+        }
+      }, [visible, author]);
+
+      const enabledTags = tags.filter(t => t.status === 1);
+
+      const toggle = (tagId) => {
+        if (selectedIds.includes(tagId)) {
+          setSelectedIds(selectedIds.filter(id => id !== tagId));
+        } else {
+          if (selectedIds.length >= MAX_TAGS_PER_AUTHOR) return;
+          setSelectedIds([...selectedIds, tagId]);
+        }
+      };
+
+      if (!visible || !author) return null;
+
+      const atLimit = selectedIds.length >= MAX_TAGS_PER_AUTHOR;
+
+      return (
+        <div className="modal-mask" onClick={onCancel}>
+          <div className="modal wide" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <span className="modal-title">编辑标签</span>
+                <span style={{ marginLeft: 12, fontSize: 14, color: 'var(--text-secondary)' }}>— {author.nickname}</span>
+              </div>
+              <button className="modal-close" onClick={onCancel}>×</button>
+            </div>
+            <div className="modal-body">
+              <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>选择要绑定的标签（仅展示已启用的标签）</span>
+                <span className={`tag-count ${atLimit ? 'limit' : ''}`}>
+                  已选 <b>{selectedIds.length}</b> / {MAX_TAGS_PER_AUTHOR}
+                </span>
+              </div>
+              <div className="tag-check-list">
+                {enabledTags.length === 0 ? (
+                  <div className="empty">
+                    <div className="empty-icon">🏷️</div>
+                    <div className="empty-text">暂无可用标签，请先在「标签管理」中创建</div>
+                  </div>
+                ) : enabledTags.map(tag => {
+                  const checked = selectedIds.includes(tag.id);
+                  const disabled = !checked && atLimit;
+                  return (
+                    <div
+                      key={tag.id}
+                      className={`tag-check-item ${checked ? 'checked' : ''} ${disabled ? 'check-disabled' : ''}`}
+                      onClick={() => !disabled && toggle(tag.id)}
+                    >
+                      <div className={`checkbox ${checked ? 'checked' : ''}`} />
+                      <div className="color-dot" style={{ background: tag.color }} />
+                      <span className="tag" style={{ background: tag.color, color: getLabelTextColor(tag.color) }}>
+                        {tag.iconUrl && <span style={{ fontSize: 12 }}>{tag.iconUrl}</span>}
+                        {tag.name}
+                      </span>
+                      <span style={{ flex: 1 }} />
+                      <span className="text-sm text-secondary">{tag.description}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {atLimit && (
+                <div className="form-hint" style={{ color: 'var(--orange)', marginTop: 12 }}>
+                  ⚠️ 已达单作者标签上限（{MAX_TAGS_PER_AUTHOR} 个），需取消勾选后才能选择其他标签
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-default" onClick={onCancel}>取消</button>
+              <button className="btn btn-primary" onClick={() => onSave(author.authorId, selectedIds)}>保存</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==================== Utility ====================
+    function getLabelTextColor(bgColor) {
+      if (!bgColor || bgColor.length < 7) return '#fff';
+      const hex = bgColor.replace('#', '');
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.55 ? '#1A202C' : '#FFFFFF';
+    }
+
+    // ==================== Tag Management Page ====================
+    function TagManagementPage({ tags, setTags, addToast }) {
+      const [searchName, setSearchName] = useState('');
+      const [filterStatus, setFilterStatus] = useState('all');
+      const [formVisible, setFormVisible] = useState(false);
+      const [editingTag, setEditingTag] = useState(null);
+      const [confirmVisible, setConfirmVisible] = useState(false);
+      const [deletingTag, setDeletingTag] = useState(null);
+
+      const filtered = tags.filter(t => {
+        if (searchName && !t.name.includes(searchName)) return false;
+        if (filterStatus !== 'all' && t.status !== parseInt(filterStatus)) return false;
+        return true;
+      }).sort((a, b) => a.sortOrder - b.sortOrder);
+
+      const handleSave = (data) => {
+        if (data.id) {
+          setTags(prev => prev.map(t => t.id === data.id ? { ...t, ...data } : t));
+          addToast('success', '标签更新成功');
+        } else {
+          const newTag = { ...data, id: Date.now(), createdBy: '运营A', createdAt: dayjs().format('YYYY-MM-DD HH:mm'), authorCount: 0, status: 1 };
+          setTags(prev => [...prev, newTag]);
+          addToast('success', '标签创建成功');
+        }
+        setFormVisible(false);
+        setEditingTag(null);
+      };
+
+      const handleToggleStatus = (tag) => {
+        setTags(prev => prev.map(t => t.id === tag.id ? { ...t, status: t.status === 1 ? 0 : 1 } : t));
+        addToast('success', `标签已${tag.status === 1 ? '停用' : '启用'}`);
+      };
+
+      const handleDelete = () => {
+        if (!deletingTag) return;
+        setTags(prev => prev.filter(t => t.id !== deletingTag.id));
+        addToast('success', '标签已删除');
+        setConfirmVisible(false);
+        setDeletingTag(null);
+      };
+
+      const isAtLimit = tags.length >= MAX_TAGS;
+
+      return (
+        <>
+          <div className="card">
+            <div className="card-header">
+              <div className="flex items-center gap-4">
+                <span className="card-title">标签管理</span>
+                <span className={`tag-count ${isAtLimit ? 'limit' : ''}`}>
+                  <b>{tags.length}</b> / {MAX_TAGS}
+                </span>
+              </div>
+              <button className="btn btn-primary" disabled={isAtLimit} onClick={() => { setEditingTag(null); setFormVisible(true); }}>
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.75.75 0 01.75.75v4.5h4.5a.75.75 0 010 1.5h-4.5v4.5a.75.75 0 01-1.5 0v-4.5h-4.5a.75.75 0 010-1.5h4.5v-4.5A.75.75 0 018 2z"/></svg>
+                新增标签
+              </button>
+            </div>
+            <div className="card-body">
+              <div className="search-bar">
+                <div className="search-field">
+                  <label>标签名称</label>
+                  <input className="form-input" placeholder="搜索标签名称" value={searchName} onChange={e => setSearchName(e.target.value)} />
+                </div>
+                <div className="search-field">
+                  <label>状态</label>
+                  <select className="form-input form-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                    <option value="all">全部</option>
+                    <option value="1">启用</option>
+                    <option value="0">停用</option>
+                  </select>
+                </div>
+                <button className="btn btn-default" onClick={() => { setSearchName(''); setFilterStatus('all'); }}>重置</button>
+              </div>
+
+              {filtered.length === 0 ? (
+                <div className="empty">
+                  <div className="empty-icon">🏷️</div>
+                  <div className="empty-text">暂无标签{searchName || filterStatus !== 'all' ? '（当前筛选条件下）' : '，点击「新增标签」创建'}</div>
+                </div>
+              ) : (
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th style={{ width: 60 }}>排序</th>
+                        <th>标签名称</th>
+                        <th>图标</th>
+                        <th>颜色</th>
+                        <th>预览</th>
+                        <th>描述</th>
+                        <th style={{ width: 90 }}>关联作者</th>
+                        <th style={{ width: 80 }}>状态</th>
+                        <th>创建人</th>
+                        <th>创建时间</th>
+                        <th style={{ width: 160 }}>操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map(tag => (
+                        <tr key={tag.id}>
+                          <td style={{ color: 'var(--text-secondary)' }}>{tag.sortOrder}</td>
+                          <td style={{ fontWeight: 500 }}>{tag.name}</td>
+                          <td>{tag.iconUrl ? <span style={{ fontSize: 18 }}>{tag.iconUrl}</span> : <span className="text-secondary">—</span>}</td>
+                          <td>
+                            <div className="flex items-center gap-2">
+                              <div className="color-dot" style={{ background: tag.color }} />
+                              <span className="text-mono">{tag.color}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <span className="tag" style={{ background: tag.color, color: getLabelTextColor(tag.color) }}>
+                              {tag.iconUrl && <span style={{ fontSize: 12 }}>{tag.iconUrl}</span>}
+                              {tag.name}
+                            </span>
+                          </td>
+                          <td><span className="text-secondary truncate">{tag.description || '—'}</span></td>
+                          <td><span style={{ fontWeight: 500 }}>{tag.authorCount}</span> 人</td>
+                          <td>
+                            <div className="switch-wrap flex items-center gap-2">
+                              <div className={`switch ${tag.status === 1 ? 'on' : ''}`} onClick={() => handleToggleStatus(tag)} />
+                              <span className={`status-badge ${tag.status === 1 ? 'enabled' : 'disabled'}`}>
+                                {tag.status === 1 ? '启用' : '停用'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="text-secondary">{tag.createdBy}</td>
+                          <td className="text-secondary text-sm">{tag.createdAt}</td>
+                          <td>
+                            <div className="flex items-center gap-2">
+                              <button className="btn-link" onClick={() => { setEditingTag(tag); setFormVisible(true); }}>编辑</button>
+                              <span style={{ color: '#e8e8e8' }}>|</span>
+                              <button className="btn-link danger" onClick={() => { setDeletingTag(tag); setConfirmVisible(true); }}>删除</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <TagFormModal
+            visible={formVisible}
+            editingTag={editingTag}
+            tags={tags}
+            onSave={handleSave}
+            onCancel={() => { setFormVisible(false); setEditingTag(null); }}
+          />
+
+          <ConfirmModal
+            visible={confirmVisible}
+            title="确认删除"
+            message={<>确定要删除标签「<b>{deletingTag?.name}</b>」吗？<br/>删除后将解除该标签与所有作者的绑定关系，此操作不可恢复。</>}
+            danger
+            onConfirm={handleDelete}
+            onCancel={() => { setConfirmVisible(false); setDeletingTag(null); }}
+          />
+        </>
+      );
+    }
+
+    // ==================== Author Tag Page ====================
+    function AuthorTagPage({ tags, authors, setAuthors, addToast }) {
+      const [searchType, setSearchType] = useState('name');
+      const [keyword, setKeyword] = useState('');
+      const [searchResult, setSearchResult] = useState(authors);
+      const [modalVisible, setModalVisible] = useState(false);
+      const [editingAuthor, setEditingAuthor] = useState(null);
+      const [currentPage, setCurrentPage] = useState(1);
+      const pageSize = 5;
+
+      const handleSearch = () => {
+        if (!keyword.trim()) {
+          setSearchResult(authors);
+          setCurrentPage(1);
+          return;
+        }
+        const kw = keyword.trim().toLowerCase();
+        const result = authors.filter(a => {
+          if (searchType === 'name') return a.nickname.toLowerCase().includes(kw);
+          if (searchType === 'uuid') return a.authorId.toLowerCase().includes(kw);
+          return false;
+        });
+        setSearchResult(result);
+        setCurrentPage(1);
+      };
+
+      useEffect(() => { setSearchResult(authors); }, [authors]);
+
+      const totalPages = Math.ceil(searchResult.length / pageSize);
+      const paged = searchResult.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+      const handleSaveTags = (authorId, tagIds) => {
+        setAuthors(prev => prev.map(a => a.authorId === authorId ? { ...a, tagIds } : a));
+        setModalVisible(false);
+        setEditingAuthor(null);
+        addToast('success', '标签更新成功');
+      };
+
+      const getAuthorTags = (author) => {
+        return author.tagIds.map(id => tags.find(t => t.id === id)).filter(Boolean);
+      };
+
+      return (
+        <>
+          <div className="card">
+            <div className="card-header">
+              <span className="card-title">作者标签管理</span>
+            </div>
+            <div className="card-body">
+              <div className="search-bar">
+                <div className="search-field">
+                  <label>搜索类型</label>
+                  <select className="form-input form-select" value={searchType} onChange={e => setSearchType(e.target.value)}>
+                    <option value="name">作者名称</option>
+                    <option value="uuid">作者 UUID</option>
+                  </select>
+                </div>
+                <div className="search-field">
+                  <label>关键词</label>
+                  <input
+                    className="form-input"
+                    placeholder={searchType === 'name' ? '输入作者名称' : '输入作者 UUID'}
+                    value={keyword}
+                    onChange={e => setKeyword(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                    style={{ width: 280 }}
+                  />
+                </div>
+                <button className="btn btn-primary" onClick={handleSearch}>
+                  <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M11.742 10.344a6.5 6.5 0 10-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 001.415-1.414l-3.85-3.85a1.007 1.007 0 00-.115-.1zM12 6.5a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z"/></svg>
+                  搜索
+                </button>
+                <button className="btn btn-default" onClick={() => { setKeyword(''); setSearchResult(authors); setCurrentPage(1); }}>重置</button>
+              </div>
+
+              {searchResult.length === 0 ? (
+                <div className="empty">
+                  <div className="empty-icon">👤</div>
+                  <div className="empty-text">未找到匹配的作者</div>
+                </div>
+              ) : (
+                <>
+                  <div className="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th style={{ width: 60 }}>头像</th>
+                          <th>作者名称</th>
+                          <th>UUID</th>
+                          <th style={{ width: 80 }}>作品数</th>
+                          <th>已有标签</th>
+                          <th style={{ width: 80 }}>操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paged.map(author => {
+                          const authorTags = getAuthorTags(author);
+                          return (
+                            <tr key={author.authorId}>
+                              <td>
+                                <div className="avatar" style={{ background: author.avatar }}>
+                                  {author.nickname.charAt(0)}
+                                </div>
+                              </td>
+                              <td style={{ fontWeight: 500 }}>{author.nickname}</td>
+                              <td><span className="text-mono text-secondary">{author.authorId.substring(0, 8)}...</span></td>
+                              <td>{author.workCount}</td>
+                              <td>
+                                {authorTags.length > 0 ? (
+                                  <div className="flex items-center" style={{ flexWrap: 'wrap', gap: 6 }}>
+                                    {authorTags.map(tag => (
+                                      <span key={tag.id} className="tag" style={{ background: tag.color, color: getLabelTextColor(tag.color) }}>
+                                        {tag.iconUrl && <span style={{ fontSize: 11 }}>{tag.iconUrl}</span>}
+                                        {tag.name}
+                                      </span>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-secondary">—</span>
+                                )}
+                              </td>
+                              <td>
+                                <button className="btn-link" onClick={() => { setEditingAuthor(author); setModalVisible(true); }}>
+                                  编辑标签
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="pagination">
+                    <span className="page-info">共 {searchResult.length} 条</span>
+                    <button className="page-btn" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>‹</button>
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <button key={i + 1} className={`page-btn ${currentPage === i + 1 ? 'active' : ''}`} onClick={() => setCurrentPage(i + 1)}>
+                        {i + 1}
+                      </button>
+                    ))}
+                    <button className="page-btn" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)}>›</button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <AuthorTagModal
+            visible={modalVisible}
+            author={editingAuthor}
+            tags={tags}
+            onSave={handleSaveTags}
+            onCancel={() => { setModalVisible(false); setEditingAuthor(null); }}
+          />
+        </>
+      );
+    }
+
+    // ==================== App ====================
+    function App() {
+      const [page, setPage] = useState('tagList');
+      const [tags, setTags] = useState(initialTags);
+      const [authors, setAuthors] = useState(mockAuthors);
+      const [toasts, setToasts] = useState([]);
+
+      const addToast = (type, message) => {
+        const id = ++toastId;
+        setToasts(prev => [...prev, { id, type, message }]);
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
+      };
+
+      return (
+        <div className="layout">
+          {/* Sidebar */}
+          <aside className="sidebar">
+            <div className="sidebar-logo">
+              <div className="sidebar-logo-icon">L</div>
+              <span className="sidebar-logo-text">LibTV Admin</span>
+            </div>
+            <nav className="sidebar-menu">
+              <div className="sidebar-section">内容运营</div>
+              <div className="sidebar-item" style={{ opacity: .4, cursor: 'default' }}>
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 1a1 1 0 011 1v12a1 1 0 01-1 1H2a1 1 0 01-1-1V2a1 1 0 011-1h12zM2 0a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V2a2 2 0 00-2-2H2z"/><path d="M6.854 4.646a.5.5 0 010 .708L4.207 8l2.647 2.646a.5.5 0 01-.708.708l-3-3a.5.5 0 010-.708l3-3a.5.5 0 01.708 0zm2.292 0a.5.5 0 000 .708L11.793 8l-2.647 2.646a.5.5 0 00.708.708l3-3a.5.5 0 000-.708l-3-3a.5.5 0 00-.708 0z"/></svg>
+                作品管理
+              </div>
+              <div className="sidebar-item" style={{ opacity: .4, cursor: 'default' }}>
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 118 1a7 7 0 010 14zm0 1A8 8 0 108 0a8 8 0 000 16z"/><path d="M8 4a.5.5 0 01.5.5v3h3a.5.5 0 010 1h-3v3a.5.5 0 01-1 0v-3h-3a.5.5 0 010-1h3v-3A.5.5 0 018 4z"/></svg>
+                社区审核
+              </div>
+
+              <div className="sidebar-section">作者标签</div>
+              <div className={`sidebar-item ${page === 'tagList' ? 'active' : ''}`} onClick={() => setPage('tagList')}>
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414 0l-7-7A1 1 0 012 6.586V2zm3.5 4a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/></svg>
+                标签管理
+              </div>
+              <div className={`sidebar-item ${page === 'authorList' ? 'active' : ''}`} onClick={() => setPage('authorList')}>
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 017 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 01-.014.002H7.022zM11 7a2 2 0 100-4 2 2 0 000 4zm3-2a3 3 0 11-6 0 3 3 0 016 0zM6.936 9.28a5.88 5.88 0 00-1.23-.247A7.35 7.35 0 005 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 015 13c0-.598.085-1.291.38-2.004.194-.467.478-.93.856-1.328A5.9 5.9 0 014 9.67l.002-.002zM4.5 8a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/></svg>
+                作者标签
+              </div>
+
+              <div className="sidebar-section">系统</div>
+              <div className="sidebar-item" style={{ opacity: .4, cursor: 'default' }}>
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.754a3.246 3.246 0 100 6.492 3.246 3.246 0 000-6.492zM5.754 8a2.246 2.246 0 114.492 0 2.246 2.246 0 01-4.492 0z"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 01-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 01-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 01.52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 011.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 011.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 01.52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 01-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 01-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 002.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 001.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 00-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 00-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 00-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 001.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 003.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 002.692-1.115l.094-.319z"/></svg>
+                系统设置
+              </div>
+            </nav>
+            <div className="sidebar-footer">
+              <div className="sidebar-avatar">运</div>
+              <div>
+                <div className="sidebar-user">运营A</div>
+                <div className="sidebar-role">内容运营组</div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main */}
+          <main className="main">
+            <header className="header">
+              <span className="header-title">
+                {page === 'tagList' ? '标签管理' : '作者标签管理'}
+              </span>
+              <span className="header-breadcrumb">
+                作者标签 / <span>{page === 'tagList' ? '标签管理' : '作者标签'}</span>
+              </span>
+            </header>
+            <div className="content">
+              {page === 'tagList' ? (
+                <TagManagementPage tags={tags} setTags={setTags} addToast={addToast} />
+              ) : (
+                <AuthorTagPage tags={tags} authors={authors} setAuthors={setAuthors} addToast={addToast} />
+              )}
+            </div>
+          </main>
+
+          <ToastContainer toasts={toasts} />
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
