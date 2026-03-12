@@ -689,6 +689,28 @@
       align-items: center;
     }
 
+    /* Detail page */
+    .detail-back { display: inline-flex; align-items: center; gap: 6px; color: var(--blue); cursor: pointer; font-size: 14px; margin-bottom: 16px; }
+    .detail-back:hover { color: var(--blue-hover); }
+    .detail-section {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .detail-section-title { padding: 14px 20px; font-size: 15px; font-weight: 600; border-bottom: 1px solid var(--border); background: #fafafa; }
+    .detail-section-body { padding: 20px; }
+    .detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px 32px; }
+    .detail-item label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+    .detail-item .value { font-size: 14px; font-weight: 500; }
+    .detail-item .value a { color: var(--blue); }
+    .detail-item .value a:hover { text-decoration: underline; }
+    .detail-form-row { margin-bottom: 16px; }
+    .detail-form-row label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+    .detail-form-row .form-select { width: 100%; max-width: 320px; }
+    .detail-form-row textarea { min-height: 100px; }
+
     /* Animations */
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -726,6 +748,74 @@
       { authorId: 'u1v2w3x4-abcd-ef12-3456-666666666666', nickname: '墨冰', avatar: '#D53F8C', workCount: 9, tagIds: [1, 2, 3] },
       { authorId: 'y5z6a7b8-7890-abcd-ef12-777777777777', nickname: '裕梦', avatar: '#319795', workCount: 18, tagIds: [] },
       { authorId: 'c9d0e1f2-1234-5678-90ab-888888888888', nickname: '风过草原奶自天然', avatar: '#DD6B20', workCount: 3, tagIds: [4] },
+    ];
+
+    const mockAuthorDetails = {
+      'a1b2c3d4-5678-90ab-cdef-111111111111': {
+        homepageLink: 'https://libtv.example.com/user/a1b2c3d4',
+        createDate: '2024-06-15',
+        fanCount: 12580,
+        accumulatedVv: 89200,
+        accumulatedLikes: 15600,
+        publishedVideoCount: 12,
+        worksOver30sCount: 8,
+        worksLast30DaysCount: 3,
+        qualityWorksCount: 5,
+        publicCanvasCount: 2,
+      },
+      'e5f6g7h8-1234-56cd-ef90-222222222222': {
+        homepageLink: 'https://libtv.example.com/user/e5f6g7h8',
+        createDate: '2024-08-20',
+        fanCount: 3200,
+        accumulatedVv: 18500,
+        accumulatedLikes: 4200,
+        publishedVideoCount: 8,
+        worksOver30sCount: 5,
+        worksLast30DaysCount: 2,
+        qualityWorksCount: 2,
+        publicCanvasCount: 1,
+      },
+      'i9j0k1l2-abcd-ef12-3456-333333333333': {
+        homepageLink: 'https://libtv.example.com/user/i9j0k1l2',
+        createDate: '2024-09-01',
+        fanCount: 890,
+        accumulatedVv: 5200,
+        accumulatedLikes: 1200,
+        publishedVideoCount: 5,
+        worksOver30sCount: 3,
+        worksLast30DaysCount: 1,
+        qualityWorksCount: 1,
+        publicCanvasCount: 0,
+      },
+      'm3n4o5p6-7890-abcd-ef12-444444444444': {
+        homepageLink: 'https://libtv.example.com/user/m3n4o5p6',
+        createDate: '2024-05-10',
+        fanCount: 25600,
+        accumulatedVv: 185000,
+        accumulatedLikes: 42000,
+        publishedVideoCount: 22,
+        worksOver30sCount: 18,
+        worksLast30DaysCount: 6,
+        qualityWorksCount: 12,
+        publicCanvasCount: 5,
+      },
+    };
+
+    const CERT_TYPES = [
+      { value: '', label: '请选择' },
+      { value: 'pioneer', label: 'Level 1: LibTV 先锋作者' },
+      { value: 'professional', label: 'Level 2: LibTV 专业作者' },
+      { value: 'honorary', label: 'Level 3: LibTV 荣誉作者' },
+      { value: 'cancel', label: '取消认证' },
+    ];
+    const CERT_PERIODS = [
+      { value: '', label: '请选择' },
+      { value: '30', label: '30天' },
+      { value: '60', label: '60天' },
+      { value: '90', label: '90天' },
+      { value: '180', label: '180天' },
+      { value: '365', label: '1年' },
+      { value: 'permanent', label: '永久' },
     ];
 
     const MAX_TAGS = 20;
@@ -1229,7 +1319,7 @@
     }
 
     // ==================== Author Tag Page ====================
-    function AuthorTagPage({ tags, authors, setAuthors, addToast }) {
+    function AuthorTagPage({ tags, authors, setAuthors, addToast, onViewDetail }) {
       const [nameKeyword, setNameKeyword] = useState('');
       const [uuidKeyword, setUuidKeyword] = useState('');
       const [filterTagId, setFilterTagId] = useState('all');
@@ -1373,7 +1463,7 @@
                           <th>UUID</th>
                           <th style={{ width: 80 }}>作品数</th>
                           <th>已有标签</th>
-                          <th style={{ width: 100, whiteSpace: 'nowrap' }}>操作</th>
+                          <th style={{ width: 140, whiteSpace: 'nowrap' }}>操作</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1404,9 +1494,11 @@
                                 )}
                               </td>
                               <td>
-                                <button className="btn-link" style={{ whiteSpace: 'nowrap' }} onClick={() => { setEditingAuthor(author); setModalVisible(true); }}>
-                                  编辑标签
-                                </button>
+                                <div className="flex items-center gap-2" style={{ flexWrap: 'nowrap' }}>
+                                  {onViewDetail && <button className="btn-link" style={{ whiteSpace: 'nowrap' }} onClick={() => onViewDetail(author)}>查看详情</button>}
+                                  <span style={{ color: '#e8e8e8' }}>|</span>
+                                  <button className="btn-link" style={{ whiteSpace: 'nowrap' }} onClick={() => { setEditingAuthor(author); setModalVisible(true); }}>编辑标签</button>
+                                </div>
                               </td>
                             </tr>
                           );
@@ -1440,9 +1532,154 @@
       );
     }
 
+    // ==================== Author Detail Page (操作详情页) ====================
+    function AuthorDetailPage({ author, tags, onBack, addToast }) {
+      const detail = author ? (mockAuthorDetails[author.authorId] || {
+        homepageLink: '#',
+        createDate: '-',
+        fanCount: 0,
+        accumulatedVv: 0,
+        accumulatedLikes: 0,
+        publishedVideoCount: author.workCount || 0,
+        worksOver30sCount: 0,
+        worksLast30DaysCount: 0,
+        qualityWorksCount: 0,
+        publicCanvasCount: 0,
+      }) : null;
+
+      const [certType, setCertType] = useState('');
+      const [certPeriod, setCertPeriod] = useState('');
+      const [messageContent, setMessageContent] = useState('');
+      const [submitting, setSubmitting] = useState(false);
+
+      const handleSubmit = () => {
+        if (!certType) { addToast('warning', '请选择认证类型'); return; }
+        if (certType !== 'cancel' && !certPeriod) { addToast('warning', '请选择认证生效周期'); return; }
+        setSubmitting(true);
+        setTimeout(() => {
+          setSubmitting(false);
+          addToast('success', '认证结果已提交' + (messageContent ? '，站内信已发送' : ''));
+        }, 800);
+      };
+
+      if (!author) return <div className="card"><div className="card-body"><div className="empty"><div className="empty-text">作者不存在</div></div></div></div>;
+
+      const authorTags = author.tagIds.map(id => tags.find(t => t.id === id)).filter(Boolean);
+
+      return (
+        <>
+          <div className="detail-back" onClick={onBack}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.646a.5.5 0 01.708 0l6 6a.5.5 0 010 .708l-6 6a.5.5 0 01-.708-.708L13.293 8 8 2.646a.5.5 0 010-.708z"/><path d="M2 8a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11A.5.5 0 012 8z"/></svg>
+            返回作者列表
+          </div>
+
+          {/* a. 作者信息 */}
+          <div className="detail-section">
+            <div className="detail-section-title">作者信息</div>
+            <div className="detail-section-body">
+              <div className="detail-grid">
+                <div className="detail-item">
+                  <label>作者昵称</label>
+                  <div className="value">{author.nickname}</div>
+                </div>
+                <div className="detail-item">
+                  <label>作者主页链接</label>
+                  <div className="value"><a href={detail.homepageLink} target="_blank" rel="noopener noreferrer">{detail.homepageLink}</a></div>
+                </div>
+                <div className="detail-item">
+                  <label>创建账号日期</label>
+                  <div className="value">{detail.createDate}</div>
+                </div>
+                <div className="detail-item">
+                  <label>作者粉丝数</label>
+                  <div className="value">{detail.fanCount.toLocaleString()}</div>
+                </div>
+                <div className="detail-item">
+                  <label>累计 vv</label>
+                  <div className="value">{detail.accumulatedVv.toLocaleString()}</div>
+                </div>
+                <div className="detail-item">
+                  <label>累计获得点赞</label>
+                  <div className="value">{detail.accumulatedLikes.toLocaleString()}</div>
+                </div>
+                <div className="detail-item">
+                  <label>已有标签</label>
+                  <div className="value">
+                    {authorTags.length > 0 ? authorTags.map(tag => (
+                      <span key={tag.id} className="tag" style={{ background: tag.color, color: getLabelTextColor(tag.color), marginRight: 4 }}>{tag.name}</span>
+                    )) : '—'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* b. 作品信息 */}
+          <div className="detail-section">
+            <div className="detail-section-title">作品信息</div>
+            <div className="detail-section-body">
+              <div className="detail-grid">
+                <div className="detail-item">
+                  <label>累计发布视频作品数（公开）</label>
+                  <div className="value">{detail.publishedVideoCount}</div>
+                </div>
+                <div className="detail-item">
+                  <label>时长大于 30 秒作品数</label>
+                  <div className="value">{detail.worksOver30sCount}</div>
+                </div>
+                <div className="detail-item">
+                  <label>近 30 日发布作品数</label>
+                  <div className="value">{detail.worksLast30DaysCount}</div>
+                </div>
+                <div className="detail-item">
+                  <label>累计优质作品数（精选 tag）</label>
+                  <div className="value">{detail.qualityWorksCount}</div>
+                </div>
+                <div className="detail-item">
+                  <label>公开工作流画布数</label>
+                  <div className="value">{detail.publicCanvasCount}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* c. 操作台 */}
+          <div className="detail-section">
+            <div className="detail-section-title">操作台</div>
+            <div className="detail-section-body">
+              <div className="detail-form-row">
+                <label>作者认证类型</label>
+                <select className="form-input form-select" value={certType} onChange={e => setCertType(e.target.value)}>
+                  {CERT_TYPES.map(opt => <option key={opt.value || 'empty'} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+              {certType && certType !== 'cancel' && (
+                <div className="detail-form-row">
+                  <label>认证生效周期</label>
+                  <select className="form-input form-select" value={certPeriod} onChange={e => setCertPeriod(e.target.value)}>
+                    {CERT_PERIODS.map(opt => <option key={opt.value || 'empty'} value={opt.value}>{opt.label}</option>)}
+                  </select>
+                </div>
+              )}
+              <div className="detail-form-row">
+                <label>发布站内信（选填）</label>
+                <textarea className="form-input form-textarea" value={messageContent} onChange={e => setMessageContent(e.target.value)} placeholder="站内信内文，空着可编辑；提交认证时可一并发送给作者" />
+              </div>
+              <div style={{ marginTop: 20 }}>
+                <button className="btn btn-primary" disabled={submitting} onClick={handleSubmit}>
+                  {submitting ? '提交中...' : '确认提交认证结果'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+    }
+
     // ==================== App ====================
     function App() {
       const [page, setPage] = useState('tagList');
+      const [selectedAuthorId, setSelectedAuthorId] = useState(null);
       const [tags, setTags] = useState(initialTags);
       const [authors, setAuthors] = useState(mockAuthors);
       const [toasts, setToasts] = useState([]);
@@ -1452,6 +1689,8 @@
         setToasts(prev => [...prev, { id, type, message }]);
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
       };
+
+      const selectedAuthor = selectedAuthorId ? authors.find(a => a.authorId === selectedAuthorId) : null;
 
       return (
         <div className="layout">
@@ -1477,7 +1716,7 @@
                 <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2a1 1 0 011-1h4.586a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-4.586 4.586a1 1 0 01-1.414 0l-7-7A1 1 0 012 6.586V2zm3.5 4a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/></svg>
                 标签管理
               </div>
-              <div className={`sidebar-item ${page === 'authorList' ? 'active' : ''}`} onClick={() => setPage('authorList')}>
+              <div className={`sidebar-item ${(page === 'authorList' || page === 'authorDetail') ? 'active' : ''}`} onClick={() => { setPage('authorList'); setSelectedAuthorId(null); }}>
                 <svg viewBox="0 0 16 16" fill="currentColor"><path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 017 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 01-.014.002H7.022zM11 7a2 2 0 100-4 2 2 0 000 4zm3-2a3 3 0 11-6 0 3 3 0 016 0zM6.936 9.28a5.88 5.88 0 00-1.23-.247A7.35 7.35 0 005 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 015 13c0-.598.085-1.291.38-2.004.194-.467.478-.93.856-1.328A5.9 5.9 0 014 9.67l.002-.002zM4.5 8a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/></svg>
                 作者标签
               </div>
@@ -1501,17 +1740,19 @@
           <main className="main">
             <header className="header">
               <span className="header-title">
-                {page === 'tagList' ? '标签管理' : '作者标签管理'}
+                {page === 'tagList' ? '标签管理' : page === 'authorDetail' ? '操作详情' : '作者标签管理'}
               </span>
               <span className="header-breadcrumb">
-                作者标签 / <span>{page === 'tagList' ? '标签管理' : '作者标签'}</span>
+                作者标签 / <span>{page === 'tagList' ? '标签管理' : page === 'authorDetail' ? '操作详情' : '作者标签'}</span>
               </span>
             </header>
             <div className="content">
               {page === 'tagList' ? (
                 <TagManagementPage tags={tags} setTags={setTags} addToast={addToast} />
+              ) : page === 'authorDetail' ? (
+                <AuthorDetailPage author={selectedAuthor} tags={tags} onBack={() => { setPage('authorList'); setSelectedAuthorId(null); }} addToast={addToast} />
               ) : (
-                <AuthorTagPage tags={tags} authors={authors} setAuthors={setAuthors} addToast={addToast} />
+                <AuthorTagPage tags={tags} authors={authors} setAuthors={setAuthors} addToast={addToast} onViewDetail={(author) => { setSelectedAuthorId(author.authorId); setPage('authorDetail'); }} />
               )}
             </div>
           </main>
