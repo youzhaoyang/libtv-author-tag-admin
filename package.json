@@ -9,7 +9,7 @@
     "build:preview": "vite build --config vite.preview.config.js",
     "preview:serve": "npm run build:preview && npx serve dist-preview -p 4173",
     "preview": "vite preview",
-    "deploy": "npm run build && cp -r dist/* docs/ && gh-pages -d dist"
+    "deploy": "npm run build:preview && mkdir -p docs && cp dist-preview/index.html docs/index.html"
   },
   "dependencies": {
     "dayjs": "^1.11.13",
