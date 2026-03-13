@@ -5,6 +5,7 @@ export default function UserListPage({ users = mockUsers, addToast }) {
   const [batchIds, setBatchIds] = useState('');
   const [batchUuids, setBatchUuids] = useState('');
   const [id, setId] = useState('');
+  const [uuid, setUuid] = useState('');
   const [nickname, setNickname] = useState('');
   const [account, setAccount] = useState('');
   const [mobile, setMobile] = useState('');
@@ -21,10 +22,11 @@ export default function UserListPage({ users = mockUsers, addToast }) {
     }
     if (batchUuids.trim()) {
       const uuids = batchUuids.trim().split(/[\s,，]+/).filter(Boolean);
-      if (!uuids.some((x) => u.uuid.includes(x) || x.includes(u.uuid))) return false;
+      const uUuid = u.uuid ?? '';
+      if (!uuids.some((x) => uUuid.includes(x) || x.includes(uUuid))) return false;
     }
     if (id && String(u.id) !== id) return false;
-    if (uuid && !u.uuid.includes(uuid)) return false;
+    if (uuid && !(u.uuid ?? '').includes(uuid)) return false;
     if (nickname && !u.nickname.includes(nickname)) return false;
     if (account && !(u.mobile || '').includes(account)) return false;
     if (mobile && !(u.mobile || '').includes(mobile)) return false;
@@ -47,9 +49,9 @@ export default function UserListPage({ users = mockUsers, addToast }) {
     setBatchIds('');
     setBatchUuids('');
     setId('');
+    setUuid('');
     setNickname('');
     setAccount('');
-    setUuid('');
     setMobile('');
     setStatus('');
     setTags([]);
