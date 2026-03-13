@@ -14,6 +14,14 @@ export function TagIcon() {
   );
 }
 
+export function UserListIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 100-6 3 3 0 000 6zM7 9a6 6 0 000 12h6a6 6 0 000-12H7z" />
+    </svg>
+  );
+}
+
 export function AuthorsIcon() {
   return (
     <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">

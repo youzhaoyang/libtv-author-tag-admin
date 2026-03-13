@@ -4,16 +4,18 @@ import {
   PlaceholderSettingsIcon,
   PlaceholderWorksIcon,
   TagIcon,
+  UserListIcon,
 } from './icons';
 
 const pageTitles = {
   tagList: '标签管理',
+  userList: '用户列表',
   authorList: '作者标签管理',
   authorDetail: '操作详情',
 };
 
 export default function AppLayout({ page, onNavigate, children }) {
-  const title = pageTitles[page];
+  const title = pageTitles[page] || page;
   const authorSectionActive = page === 'authorList' || page === 'authorDetail';
 
   return (
@@ -25,6 +27,15 @@ export default function AppLayout({ page, onNavigate, children }) {
         </div>
 
         <nav className="sidebar-menu">
+          <div className="sidebar-section">用户管理</div>
+          <div
+            className={`sidebar-item ${page === 'userList' ? 'active' : ''}`}
+            onClick={() => onNavigate('userList')}
+          >
+            <UserListIcon />
+            用户列表
+          </div>
+
           <div className="sidebar-section">内容运营</div>
           <div className="sidebar-item disabled">
             <PlaceholderWorksIcon />
@@ -68,7 +79,7 @@ export default function AppLayout({ page, onNavigate, children }) {
         <header className="header">
           <span className="header-title">{title}</span>
           <span className="header-breadcrumb">
-            作者标签 / <span>{title === '作者标签管理' ? '作者标签' : title}</span>
+            {page === 'userList' ? '用户管理' : '作者标签'} / <span>{title === '作者标签管理' ? '作者标签' : title}</span>
           </span>
         </header>
         <div className="content">{children}</div>

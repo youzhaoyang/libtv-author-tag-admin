@@ -1061,6 +1061,60 @@ tbody tr:last-child td {
   flex-shrink: 0;
 }
 
+.user-list-batch-query {
+  padding: 12px 24px;
+  background: #fafafa;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
+.batch-query-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.batch-query-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.batch-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.batch-field label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.batch-field .form-input {
+  min-width: 280px;
+  resize: vertical;
+}
+
+.pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.pagination-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
 .inline-search-grid {
   display: flex;
   gap: 16px;

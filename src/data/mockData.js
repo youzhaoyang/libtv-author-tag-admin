@@ -75,6 +75,16 @@ export const mockAuthors = [
   { authorId: 'c9d0e1f2-1234-5678-90ab-888888888888', nickname: '风过草原奶自天然', avatar: '#DD6B20', workCount: 3, tagIds: [4] },
 ];
 
+/** 用户列表 Mock 数据（全量用户） */
+export const mockUsers = [
+  { id: 8462755, uuid: '77fe45056d4747028f34662ddf3b025', nickname: '微信用户66e65e', mobile: '15695268580', avatar: null, status: 1, tags: [], createTime: '2025-01-15 10:00' },
+  { id: 8462754, uuid: '0e5b851d0c8443ee937ea10c002851', nickname: '156****8580', mobile: '15695268580', avatar: '#38A169', status: 1, tags: [], createTime: '2025-01-14 09:30' },
+  { id: 8462752, uuid: 'a1b2c3d4-5678-90ab-cdef-111111111111', nickname: '微信用户964163', mobile: '', avatar: null, status: 1, tags: ['liblib_official'], createTime: '2025-01-13 14:20' },
+  { id: 8462753, uuid: 'e5f6g7h8-1234-56cd-ef90-222222222222', nickname: '微信用户71970e', mobile: '', avatar: null, status: 1, tags: [], createTime: '2025-01-12 16:45' },
+  { id: 8462751, uuid: 'i9j0k1l2-abcd-ef12-3456-333333333333', nickname: '小飞侠赛事', mobile: '13800138000', avatar: '#E53E3E', status: 1, tags: ['liblib_teacher'], createTime: '2025-01-11 11:00' },
+  { id: 8462750, uuid: 'm3n4o5p6-7890-abcd-ef12-444444444444', nickname: 'JOY堂多', mobile: '', avatar: '#3182CE', status: 2, tags: [], createTime: '2025-01-10 08:15' },
+];
+
 export const mockAuthorDetails = {
   'a1b2c3d4-5678-90ab-cdef-111111111111': {
     homepageLink: 'https://libtv.example.com/user/a1b2c3d4',

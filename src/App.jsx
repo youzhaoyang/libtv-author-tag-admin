@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import AppLayout from './components/AppLayout';
 import ToastContainer from './components/ToastContainer';
-import { initialTags, mockAuthors } from './data/mockData';
+import { initialTags, mockAuthors, mockUsers } from './data/mockData';
 import AuthorDetailPage from './pages/AuthorDetailPage';
 import AuthorTagPage from './pages/AuthorTagPage';
 import TagManagementPage from './pages/TagManagementPage';
+import UserListPage from './pages/UserListPage';
 
 let toastId = 0;
 
 export default function App() {
-  const [page, setPage] = useState('tagList');
+  const [page, setPage] = useState('userList');
   const [selectedAuthorId, setSelectedAuthorId] = useState(null);
   const [tags, setTags] = useState(initialTags);
   const [authors, setAuthors] = useState(mockAuthors);
@@ -37,7 +38,9 @@ export default function App() {
   return (
     <>
       <AppLayout page={page} onNavigate={handleNavigate}>
-        {page === 'tagList' ? (
+        {page === 'userList' ? (
+          <UserListPage users={mockUsers} addToast={addToast} />
+        ) : page === 'tagList' ? (
           <TagManagementPage tags={tags} setTags={setTags} addToast={addToast} />
         ) : page === 'authorDetail' ? (
           <AuthorDetailPage
